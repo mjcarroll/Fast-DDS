@@ -55,6 +55,8 @@
 #include <rtps/participant/RTPSParticipantImpl.h>
 #include <rtps/RTPSDomainImpl.hpp>
 
+#include <tracing_lttng.h>
+
 using namespace eprosima::fastrtps;
 using namespace eprosima::fastrtps::rtps;
 using namespace std::chrono;
@@ -405,6 +407,13 @@ ReturnCode_t DataWriterImpl::enable()
         }
     }
     publisher_->rtps_participant()->registerWriter(writer_, get_topic_attributes(qos_, *topic_, type_), wqos);
+
+    TRACEPOINT(
+        create_writer,
+        static_cast<const void*>(writer_),
+        topic_->get_name().c_str(),
+        guid().guidPrefix.value,
+        guid().entityId.value);
 
     return ReturnCode_t::RETCODE_OK;
 }
@@ -909,6 +918,16 @@ ReturnCode_t DataWriterImpl::check_new_change_preconditions(
     return ReturnCode_t::RETCODE_OK;
 }
 
+#ifdef DDS_HAS_LTTNG_TRACING
+// See: https://github.com/ros2/rmw_fastrtps/blob/7cb3bd0f73f332f9c27caf505b5bcd1b055c0ec7/rmw_fastrtps_shared_cpp/include/rmw_fastrtps_shared_cpp/TypeSupport.hpp#L37
+struct _SerializedData
+{
+  bool is_cdr_buffer;  // Whether next field is a pointer to a Cdr or to a plain ros message
+  void * data;
+  const void * impl;   // RMW implementation specific data
+};
+#endif  // DDS_HAS_LTTNG_TRACING
+
 ReturnCode_t DataWriterImpl::perform_create_new_change(
         ChangeKind_t change_kind,
         void* data,
@@ -950,6 +969,12 @@ ReturnCode_t DataWriterImpl::perform_create_new_change(
     if (ch != nullptr)
     {
         payload.move_into_change(*ch);
+
+#ifdef DDS_HAS_LTTNG_TRACING
+        // Hack, see _SerializedData above
+        _SerializedData * sdu = reinterpret_cast<_SerializedData *>(data);
+        TRACEPOINT(write_pre, static_cast<const void *>(writer_), static_cast<const void *>(sdu->data));
+#endif  // DDS_HAS_LTTNG_TRACING
 
         bool added = false;
         if (reader_filters_)

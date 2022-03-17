@@ -101,6 +101,9 @@
 // Statistics
 #cmakedefine FASTDDS_STATISTICS
 
+// Whether or not support for LTTng tracing instrumentation is included
+#cmakedefine DDS_HAS_LTTNG_TRACING @DDS_HAS_LTTNG_TRACING@
+
 // Deprecated macro
 #if __cplusplus >= 201402L
 #define FASTRTPS_DEPRECATED(msg) [[ deprecated(msg) ]]

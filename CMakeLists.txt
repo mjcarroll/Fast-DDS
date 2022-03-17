@@ -279,6 +279,21 @@ endif()
 
 option(SQLITE3_SUPPORT "Activate SQLITE3 support" ON)
 
+# TODO(christophebedard) make this OFF by default
+option(FASTDDS_ENABLE_TRACING "Enable building with static tracepoints with LTTng." ON)
+if(FASTDDS_ENABLE_TRACING AND CMAKE_SYSTEM_NAME MATCHES Linux)
+  find_package(PkgConfig)
+  if(PkgConfig_FOUND)
+    pkg_check_modules(LTTNG lttng-ust)
+    if(LTTNG_FOUND)
+      message(STATUS "Building with LTTng instrumentation support")
+      set(DDS_HAS_LTTNG_TRACING "1")
+    else()
+      message(FATAL_ERROR "FASTDDS_ENABLE_TRACING requires lttng-ust")
+    endif()
+  endif()
+endif()
+
 ###############################################################################
 # SHM as Default transport
 ###############################################################################

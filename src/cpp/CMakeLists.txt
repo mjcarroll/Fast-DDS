@@ -250,6 +250,10 @@ set(${PROJECT_NAME}_source_files
     statistics/fastdds/subscriber/qos/DataReaderQos.cpp
     )
 
+if(DDS_HAS_LTTNG_TRACING)
+    list(APPEND ${PROJECT_NAME}_source_files "tracing_lttng.c")
+endif()
+
 # Statistics support
 if (FASTDDS_STATISTICS)
 
@@ -492,6 +496,10 @@ target_link_libraries(${PROJECT_NAME} ${PRIVACY} fastcdr foonathan_memory
     ${THIRDPARTY_BOOST_LINK_LIBS}
     PRIVATE eProsima_atomic
     )
+
+if (DDS_HAS_LTTNG_TRACING)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${LTTNG_LIBRARIES} "-rdynamic")
+endif()
 
 if(MSVC OR MSVC_IDE)
     # On installed binaries use manifest to specify dependencies

@@ -23,6 +23,8 @@
 #include <fastdds/rtps/common/WriteParams.h>
 #include <fastdds/core/policy//ParameterSerializer.hpp>
 
+#include <tracing_lttng.h>
+
 #include <mutex>
 
 namespace eprosima {
@@ -102,6 +104,11 @@ bool WriterHistory::prepare_and_add_change(
     wparams.sample_identity().sequence_number(a_change->sequenceNumber);
     wparams.related_sample_identity(wparams.sample_identity());
     set_fragments(a_change);
+
+    TRACEPOINT(
+        write,
+        static_cast<const void*>(mp_writer),
+        a_change->sourceTimestamp.to_ns());
 
     m_changes.push_back(a_change);
 

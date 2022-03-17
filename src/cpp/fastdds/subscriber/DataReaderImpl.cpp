@@ -61,8 +61,11 @@
 #include <rtps/history/TopicPayloadPoolRegistry.hpp>
 #include <rtps/participant/RTPSParticipantImpl.h>
 
+#include <tracing_lttng.h>
+
 using eprosima::fastrtps::RecursiveTimedMutex;
 using eprosima::fastrtps::c_TimeInfinite;
+
 
 using namespace eprosima::fastrtps::rtps;
 using namespace std::chrono;
@@ -274,6 +277,13 @@ ReturnCode_t DataReaderImpl::enable()
 
         return ReturnCode_t::RETCODE_ERROR;
     }
+
+    TRACEPOINT(
+        create_reader,
+        static_cast<const void*>(reader_),
+        topic_->get_name().c_str(),
+        guid().guidPrefix.value,
+        guid().entityId.value);
 
     return ReturnCode_t::RETCODE_OK;
 }
@@ -677,6 +687,16 @@ ReturnCode_t DataReaderImpl::return_loan(
     return ReturnCode_t::RETCODE_OK;
 }
 
+#ifdef DDS_HAS_LTTNG_TRACING
+// See: https://github.com/ros2/rmw_fastrtps/blob/7cb3bd0f73f332f9c27caf505b5bcd1b055c0ec7/rmw_fastrtps_shared_cpp/include/rmw_fastrtps_shared_cpp/TypeSupport.hpp#L37
+struct _SerializedData
+{
+  bool is_cdr_buffer;  // Whether next field is a pointer to a Cdr or to a plain ros message
+  void * data;
+  const void * impl;   // RMW implementation specific data
+};
+#endif  // DDS_HAS_LTTNG_TRACING
+
 ReturnCode_t DataReaderImpl::read_or_take_next_sample(
         void* data,
         SampleInfo* info,
@@ -732,6 +752,12 @@ ReturnCode_t DataReaderImpl::read_or_take_next_sample(
     }
 
     try_notify_read_conditions();
+
+#ifdef DDS_HAS_LTTNG_TRACING
+    // Hack, see _SerializedData above
+    _SerializedData * sdu = reinterpret_cast<_SerializedData *>(data);
+    TRACEPOINT(read, static_cast<const void *>(reader_), static_cast<const void *>(sdu->data));
+#endif  // DDS_HAS_LTTNG_TRACING
 
     return code;
 }
