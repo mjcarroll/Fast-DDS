@@ -68,9 +68,13 @@ public:
     RTPS_DllAPI ReturnCode_t attach_condition(
             const Condition& cond);
 
+    /**
+     * @brief Attaches multiple to the Wait Set.
+     * @param conds Reference to the collection of conditions to attach
+     * @return RETCODE_OK if all attached correctly, error code otherwise
+     */
     RTPS_DllAPI ReturnCode_t attach_conditions(
-            const ConditionSeq& cond);
-
+            const ConditionSeq& conds);
 
     /**
      * @brief Detaches a Condition from the WaitSet
@@ -80,6 +84,10 @@ public:
     RTPS_DllAPI ReturnCode_t detach_condition(
             const Condition& cond);
 
+    /**
+     * @brief Detaches all Conditions from the WaitSet
+     * @return RETCODE_OK if detached correctly, PRECONDITION_NOT_MET if condition was not attached
+     */
     RTPS_DllAPI ReturnCode_t detach_all_conditions();
 
     /**
