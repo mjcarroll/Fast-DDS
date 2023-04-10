@@ -68,6 +68,9 @@ public:
     RTPS_DllAPI ReturnCode_t attach_condition(
             const Condition& cond);
 
+    RTPS_DllAPI ReturnCode_t attach_conditions(
+            const ConditionSeq& cond);
+
 
     /**
      * @brief Detaches a Condition from the WaitSet
@@ -76,6 +79,8 @@ public:
      */
     RTPS_DllAPI ReturnCode_t detach_condition(
             const Condition& cond);
+
+    RTPS_DllAPI ReturnCode_t detach_all_conditions();
 
     /**
      * @brief Allows an application thread to wait for the occurrence of certain conditions.

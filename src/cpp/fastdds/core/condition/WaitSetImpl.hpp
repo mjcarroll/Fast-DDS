@@ -59,6 +59,8 @@ struct WaitSetImpl
      */
     ReturnCode_t attach_condition(
             const Condition& condition);
+    ReturnCode_t attach_conditions(
+            const ConditionSeq& conditions);
 
     /**
      * @brief Detach a Condition from this WaitSet implementation
@@ -68,6 +70,8 @@ struct WaitSetImpl
      */
     ReturnCode_t detach_condition(
             const Condition& condition);
+
+    ReturnCode_t detach_all_conditions();
 
     /**
      * @brief Wait for any of the attached conditions to be triggered.

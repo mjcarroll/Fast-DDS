@@ -84,6 +84,26 @@ ReturnCode_t WaitSetImpl::attach_condition(
     return ReturnCode_t::RETCODE_OK;
 }
 
+ReturnCode_t WaitSetImpl::attach_conditions(
+        const ConditionSeq& conditions)
+{
+    bool needs_notify = false;
+
+    {
+      std::lock_guard<std::mutex> guard(mutex_);
+      for (auto condition: conditions)
+      {
+        entries_.emplace_back(condition);
+        condition->get_notifier()->attach_to(this);
+      }
+    }
+
+    if (needs_notify)
+      cond_.notify_one();
+
+    return ReturnCode_t::RETCODE_OK;
+}
+
 ReturnCode_t WaitSetImpl::detach_condition(
         const Condition& condition)
 {
@@ -104,6 +124,17 @@ ReturnCode_t WaitSetImpl::detach_condition(
 
     // Condition not found
     return ReturnCode_t::RETCODE_PRECONDITION_NOT_MET;
+}
+
+ReturnCode_t WaitSetImpl::detach_all_conditions()
+{
+    std::lock_guard<std::mutex> guard(mutex_);
+    for (const Condition* c : entries_)
+    {
+        c->get_notifier()->detach_from(this);
+    }
+    entries_.clear();
+    return ReturnCode_t::RETCODE_OK;
 }
 
 ReturnCode_t WaitSetImpl::wait(

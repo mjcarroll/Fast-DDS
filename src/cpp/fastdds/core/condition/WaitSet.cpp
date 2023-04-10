@@ -37,16 +37,28 @@ WaitSet::~WaitSet()
 {
 }
 
+
 ReturnCode_t WaitSet::attach_condition(
         const Condition& cond)
 {
     return impl_->attach_condition(cond);
 }
 
+ReturnCode_t WaitSet::attach_conditions(
+       const ConditionSeq& conditions)
+{
+  return impl_->attach_conditions(conditions);
+}
+
 ReturnCode_t WaitSet::detach_condition(
         const Condition& cond)
 {
     return impl_->detach_condition(cond);
+}
+
+ReturnCode_t WaitSet::detach_all_conditions()
+{
+  return impl_->detach_all_conditions();
 }
 
 ReturnCode_t WaitSet::wait(
